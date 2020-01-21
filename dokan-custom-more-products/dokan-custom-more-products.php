@@ -23,20 +23,17 @@ function dokan_custom_set_more_from_seller_tab( $tabs ) {
 
 add_filter( 'woocommerce_product_tabs', 'dokan_custom_set_more_from_seller_tab', 11 );
 
-function dokan_custom_get_more_products_from_seller( $seller_id = 0, $posts_per_page = 6 ) {
+function dokan_custom_get_more_products_from_seller() {
     global $product, $post;
 
-    if ( $seller_id == 0 ) {
-        $seller_id = $post->post_author;
-    }
+    $maximum_products_to_show = 6;
+    $products_per_row = 3;
 
-    if ( ! abs( $posts_per_page ) ) {
-        $posts_per_page = 4;
-    }
+    $seller_id = $post->post_author;
 
     $args = array(
         'post_type'      => 'product',
-        'posts_per_page' => $posts_per_page,
+        'posts_per_page' => $maximum_products_to_show,
         'orderby'        => 'rand',
         'post__not_in'   => array( $post->ID ),
         'author'         => $seller_id,
@@ -44,15 +41,15 @@ function dokan_custom_get_more_products_from_seller( $seller_id = 0, $posts_per_
 
     $products = new WP_Query( $args );
 
-    // Require at least 3 products to display
-    if ( $products->have_posts() && $products->post_count >= 3 ) {
-    	// Magic starts here. Restrict to show products have count divisible by 3
-    	$remainder = $products->post_count % 3;
+    // Require at least `$products_per_row` products to display
+    if ( $products->have_posts() && $products->post_count >= $products_per_row ) {
+        // Magic starts here. Restrict to show products have count divisible by $products_per_row
+        $remainder = $products->post_count % $products_per_row;
 
-    	if ( $remainder ) {
-    		$products->post_count -= $remainder;
-    	}
-    	// Magic ends
+        if ( $remainder ) {
+            $products->post_count -= $remainder;
+        }
+        // Magic ends
 
         woocommerce_product_loop_start();
 
